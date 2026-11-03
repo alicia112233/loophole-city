@@ -74,7 +74,7 @@ When the game gets busy, it turns away new towns first, so that games under way 
 ## Help keep the town running
 
 - ⭐ **[Star this repo](https://github.com/alicia112233/loophole-city)** if the game made you laugh or think. It helps other people find it.
-- ☕ **[Buy the town a coffee](https://buymeacoffee.com/YOUR_USERNAME)**. Donations pay for the AI credit that keeps the game free.
+- ☕ **[Buy the town a coffee](https://buymeacoffee.com/aliciatws)**. Donations pay for the AI credit that keeps the game free.
 - 💬 **Tell us what to improve.** Press **Suggest an improvement** in the game, with no account needed, or [open a GitHub issue](https://github.com/alicia112233/loophole-city/issues/new).
 - 📣 **Send it to someone who writes rules**: a councillor, a staffer, a civics teacher or your HOA president.
 
