@@ -278,20 +278,22 @@ export function simulateDay(prev: TownState, plan: DayPlan): DayResult {
 
   const upkeep = Math.min(RULES.upkeepPerDay, s.treasury);
   s.treasury -= upkeep;
-  ledger.push({
-    citizen: "town",
-    type: "upkeep",
-    ok: true,
-    text: `City upkeep cost ${money(upkeep)}`,
-    note: "",
-    reject: null,
-    counterparty: null,
-    cash: 0,
-    counterpartyCash: 0,
-    stock: 0,
-    clout: 0,
-    treasury: -upkeep,
-  });
+  if (upkeep > 0) {
+    ledger.push({
+      citizen: "town",
+      type: "upkeep",
+      ok: true,
+      text: `City upkeep cost ${money(upkeep)}`,
+      note: "",
+      reject: null,
+      counterparty: null,
+      cash: 0,
+      counterpartyCash: 0,
+      stock: 0,
+      clout: 0,
+      treasury: -upkeep,
+    });
+  }
 
   const decreeToday = Boolean(s.law?.decree && s.law.enactedDay === s.day);
   const trustChanges = trustChangesFor(s, tally, plan.town_mood, decreeToday);
