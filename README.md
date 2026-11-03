@@ -1,36 +1,83 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Loophole City
 
-## Getting Started
+You write the laws. Six AI citizens find the loophole.
 
-First, run the development server:
+**Play it:** https://loophole-city.vercel.app
+
+Built for [Claude SG X Supabase: Build with Claude and Supabase](https://luma.com/ClaudesgXsupabase).
+
+## How to play
+
+1. **Take office.** Enter your name to found a town. You are the host.
+2. **Invite friends (optional).** They scan the QR code or enter the four-letter town code on their phones.
+3. **Write a law.** Type your own or tap a suggestion. It needs a majority of everyone in town, and you can force it through for 5 public trust. If you are playing alone, it passes straight away. A new law starts on the next day.
+4. **Press Next day.** Only the host can. Watch what the citizens do with your law, then read the Daily Loophole.
+5. **Investigate.** Click a citizen to see their motive, their reasoning and their transactions.
+6. **Fix it.** Pass a new law to close the loophole. Only one law is in force at a time, and every fix tends to cause a new problem.
+7. **Rewind.** Pick a past day on the timeline, change the law and get a different disaster. Earlier timelines are kept so you can compare them.
+
+Your administration ends when:
+
+- the treasury reaches $0
+- public trust reaches 0
+- you serve the full 15 days
+- you resign in disgrace
+
+You then get a final newspaper and a shareable "Your administration lasted N days" card.
+
+## How to run it
+
+You need Node.js, a [Supabase](https://supabase.com) project and a [Vercel AI Gateway](https://vercel.com/ai-gateway) key.
+
+**1. Install dependencies**
+
+```bash
+npm install
+```
+
+**2. Create `.env.local`** in the project root:
+
+```bash
+AI_GATEWAY_API_KEY=
+NEXT_PUBLIC_SUPABASE_URL=
+NEXT_PUBLIC_SUPABASE_ANON_KEY=
+SUPABASE_SERVICE_ROLE_KEY=
+GAME_SECRET=
+```
+
+Set `GAME_SECRET` to any long random string, which you can generate with:
+
+```bash
+node -e "console.log(require('crypto').randomBytes(32).toString('base64url'))"
+```
+
+Two more settings are optional:
+
+| Variable | Default | What it does |
+|---|---|---|
+| `LOOPHOLE_MODEL` | `anthropic/claude-opus-5.5` | The model the citizens run on |
+| `MAX_DAYS_PER_HOUR` | `120` | Limit on game days per hour across all towns, to protect your AI credit |
+
+**3. Set up the database**
+
+```bash
+npx supabase link --project-ref <your-project-ref>
+npx supabase db push
+```
+
+**4. Start the app**
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open http://localhost:3000.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+**Tests**
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+```bash
+npm test
+npm run typecheck
+```
 
-## Learn More
-
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+With the app running, `node scripts/e2e.mjs http://localhost:3000` checks the full game against your real database. It also makes real model calls, so it uses a small amount of AI credit.
