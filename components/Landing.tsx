@@ -6,6 +6,7 @@ import { post, saveIdentity } from "@/lib/client";
 import { CITIZEN_IDS, initialState } from "@/lib/game/types";
 import type { Identity } from "@/lib/snapshot";
 import { Scene } from "./Scene";
+import { Support } from "./Support";
 
 export function Landing() {
   const router = useRouter();
@@ -83,6 +84,7 @@ export function Landing() {
           <Scene state={initialState()} active={null} selected={null} busy={false} onSelect={() => {}} />
         </div>
       </div>
+      <Support page="landing" />
     </main>
   );
 }

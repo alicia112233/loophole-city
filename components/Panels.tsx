@@ -6,6 +6,7 @@ import { money } from "@/lib/client";
 import { STATUS_LABEL } from "@/lib/game/engine";
 import { CITIZENS, RULES, type CitizenId, type LedgerEntry, type TownState } from "@/lib/game/types";
 import type { DayRow, EndingRow, Identity, LawRow, Snapshot } from "@/lib/snapshot";
+import { Support } from "./Support";
 
 const SUGGESTIONS = [
   "The town will pay $5 for every piece of litter collected.",
@@ -436,6 +437,7 @@ export function EndingOverlay({
               </div>
             </div>
           )}
+          <Support page="ending" />
         </div>
       </div>
     </div>

@@ -20,7 +20,8 @@ export const viewport: Viewport = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en" className={`${ui.variable} ${display.variable} ${blackletter.variable}`}>
-      <body>{children}</body>
+      {/* Browser extensions such as ColorZilla add attributes to body before React loads. */}
+      <body suppressHydrationWarning>{children}</body>
     </html>
   );
 }

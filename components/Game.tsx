@@ -6,6 +6,7 @@ import { CITIZENS, CITIZEN_IDS, RULES, type CitizenId, type LedgerEntry, type To
 import type { DayRow, Identity, Snapshot } from "@/lib/snapshot";
 import { CitizenDrawer, Books, EndingOverlay, JoinCard, LawDesk, Paper, PastRuns, Timeline } from "./Panels";
 import { Scene, SPOTS } from "./Scene";
+import { Support } from "./Support";
 
 const STEP_MS = 850;
 
@@ -399,6 +400,8 @@ export function Game({ code }: { code: string }) {
           <PastRuns endings={snap.endings} current={snap.town.timeline} />
         </aside>
       </div>
+
+      <Support page="town" />
 
       {selected && (
         <CitizenDrawer

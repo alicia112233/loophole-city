@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { initialState } from "@/lib/game/types";
-import { db, HttpError, playerToken, route } from "@/lib/server";
+import { limits } from "@/lib/limits";
+import { checkNewGamesOpen, claimIpSlot, db, HttpError, playerToken, route } from "@/lib/server";
 
 const ALPHABET = "ABCDEFGHJKMNPQRSTUVWXYZ";
 
@@ -12,6 +13,15 @@ export const POST = route(async (req: Request) => {
   const body = await req.json().catch(() => ({}));
   const name = String(body.name ?? "").trim().slice(0, 24);
   if (!name) throw new HttpError(400, "Tell us your name.");
+
+  await checkNewGamesOpen();
+  const { townsPerIpPerDay } = limits();
+  if (!(await claimIpSlot(req, "town", townsPerIpPerDay))) {
+    throw new HttpError(
+      429,
+      `You have founded ${townsPerIpPerDay} towns today, the daily limit. Your towns are saved, and joining a friend's town is always free.`,
+    );
+  }
 
   const client = db();
   const state = initialState();

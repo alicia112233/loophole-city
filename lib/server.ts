@@ -3,6 +3,7 @@ import { createClient } from "@supabase/supabase-js";
 import { NextResponse } from "next/server";
 import { endingStats } from "./game/engine";
 import { fallbackEnding, writeEnding } from "./ai";
+import { clientNetwork, limits } from "./limits";
 import type { LedgerEntry, TownState } from "./game/types";
 import type { DayRow, EndingRow, LawRow, PlayerRow, Snapshot, TownRow, VoteRow } from "./snapshot";
 
@@ -102,24 +103,91 @@ export async function unlockTown(townId: string) {
   await db().from("towns").update({ busy_since: null }).eq("id", townId);
 }
 
-/** Protects the AI Gateway credit from a public link getting hammered. */
-export async function checkBudget() {
-  const limit = Number(process.env.MAX_DAYS_PER_HOUR ?? 120);
-  const since = new Date(Date.now() - 3600_000).toISOString();
-  const { count, error } = await db()
+function hashNetwork(req: Request) {
+  return createHmac("sha256", secret()).update(`network:${clientNetwork(req.headers)}`).digest("base64url");
+}
+
+function refuseBudget(status: string, newGame: boolean) {
+  if (status === "busy") {
+    throw new HttpError(429, "Town Hall is full this hour. Try again in a little while. Games under way keep running.");
+  }
+  if (status !== "ok") {
+    throw new HttpError(
+      429,
+      newGame
+        ? "Town Hall has closed to new towns for today, to stay within its AI budget. Come back tomorrow."
+        : "Town Hall has spent today's AI budget. Your town is saved, so come back tomorrow and carry on.",
+    );
+  }
+}
+
+/** Refuses a new town early, before the player has written a law they cannot play. */
+export async function checkNewGamesOpen() {
+  const { daysPerHour, daysPerDay } = limits();
+  const { data, error } = await db().rpc("day_budget_status", {
+    p_new_game: true,
+    p_hour_limit: daysPerHour,
+    p_day_limit: daysPerDay,
+  });
+  if (error) throw error;
+  refuseBudget(data as string, true);
+}
+
+/** Takes one of this network's daily slots. Returns false once they are used up. */
+export async function claimIpSlot(req: Request, kind: "town" | "feedback", limit: number) {
+  const { data, error } = await db().rpc("claim_ip_slot", {
+    p_kind: kind,
+    p_ip_hash: hashNetwork(req),
+    p_limit: limit,
+  });
+  if (error) throw error;
+  return data as boolean;
+}
+
+/**
+ * Pays for one day before the model is called. Call this while holding the town's lock,
+ * so a double tap cannot be charged twice and the per-town count cannot race.
+ */
+export async function claimDay(town: TownRow) {
+  const { daysPerTown, daysPerHour, daysPerDay } = limits();
+  const client = db();
+  const { count, error: countError } = await client
     .from("days")
     .select("id", { count: "exact", head: true })
-    .eq("generated", true)
-    .gte("created_at", since);
-  if (error) throw error;
-  if ((count ?? 0) >= limit) {
-    throw new HttpError(429, "Town Hall has run out of paperwork for this hour. Try again shortly.");
+    .eq("town_id", town.id)
+    .eq("generated", true);
+  if (countError) throw countError;
+  if ((count ?? 0) >= daysPerTown) {
+    throw new HttpError(429, `This town has used all ${daysPerTown} of its days. Found a new town to keep legislating.`);
   }
+
+  // A rewind is part of a game already under way, not a new one.
+  const newGame = town.timeline === 1 && town.state.day === 0;
+  const { data, error } = await client.rpc("claim_day", {
+    p_new_game: newGame,
+    p_hour_limit: daysPerHour,
+    p_day_limit: daysPerDay,
+  });
+  if (error) throw error;
+  refuseBudget(data as string, newGame);
+}
+
+/** The final newspaper is optional: if the budget is spent, the game uses its template. */
+async function claimEnding() {
+  if (!process.env.AI_GATEWAY_API_KEY) return false;
+  const { daysPerHour, daysPerDay } = limits();
+  const { data, error } = await db().rpc("claim_day", {
+    p_new_game: false,
+    p_hour_limit: daysPerHour,
+    p_day_limit: daysPerDay,
+  });
+  if (error) console.error("claimEnding failed", error);
+  return data === "ok";
 }
 
 /** Writes the final newspaper for a finished run. Safe to call twice. */
 export async function saveEnding(town: TownRow, timeline: number, state: TownState, ledger: LedgerEntry[]) {
-  const copy = process.env.AI_GATEWAY_API_KEY ? await writeEnding(state, ledger) : fallbackEnding(state);
+  const copy = (await claimEnding()) ? await writeEnding(state, ledger) : fallbackEnding(state);
   const { error } = await db()
     .from("endings")
     .upsert(

@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { CitizensRefused, planDay } from "@/lib/ai";
 import { enactLaw, simulateDay } from "@/lib/game/engine";
 import {
-  checkBudget,
+  claimDay,
   db,
   getTown,
   HttpError,
@@ -20,7 +20,6 @@ export const POST = route(async (req: Request, ctx: { params: Promise<{ code: st
   const { code } = await ctx.params;
   const town = await getTown(code);
   await requireHost(req, town);
-  await checkBudget();
 
   const locked = await lockTown(town);
   try {
@@ -35,6 +34,8 @@ export const POST = route(async (req: Request, ctx: { params: Promise<{ code: st
       state = enactLaw(state, { id: law.id, text: law.text, proposer: law.proposer_name, decree: law.decree });
     }
     if (!state.law) throw new HttpError(409, "Pass a law first. The citizens need something to exploit.");
+
+    await claimDay(locked);
 
     let plan;
     try {
