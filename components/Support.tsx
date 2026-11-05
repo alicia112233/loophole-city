@@ -1,10 +1,12 @@
 "use client";
 
 import { useState } from "react";
+import { Cookie } from "next/font/google";
 import { post } from "@/lib/client";
 
+const coffeeFont = Cookie({ weight: "400", subsets: ["latin"], display: "swap" });
 const REPO_URL = "https://github.com/alicia112233/loophole-city";
-const DONATE_URL = process.env.NEXT_PUBLIC_DONATE_URL;
+const DONATE_URL = process.env.NEXT_PUBLIC_DONATE_URL || "https://buymeacoffee.com/aliciatws";
 
 /** Star, donate and feedback links, shown on the landing page, in town and on the final edition. */
 export function Support({ page }: { page: string }) {
@@ -36,11 +38,15 @@ export function Support({ page }: { page: string }) {
         <a className="btn btn-small" href={REPO_URL} target="_blank" rel="noreferrer">
           Star on GitHub
         </a>
-        {DONATE_URL && (
-          <a className="btn btn-small" href={DONATE_URL} target="_blank" rel="noreferrer">
-            Buy the town a coffee
-          </a>
-        )}
+        <a
+          className={`btn btn-small btn-coffee ${coffeeFont.className}`}
+          href={DONATE_URL}
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          <span className="coffee-emoji" aria-hidden="true">☕</span>
+          Buy me a coffee
+        </a>
         <button type="button" className="btn btn-small" aria-expanded={open} onClick={() => setOpen(!open)}>
           Suggest an improvement
         </button>

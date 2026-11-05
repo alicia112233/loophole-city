@@ -128,7 +128,7 @@ All of these are optional.
 | Variable                        | Default                       | What it does                                                                                                |
 | ------------------------------- | ----------------------------- | ----------------------------------------------------------------------------------------------------------- |
 | `LOOPHOLE_MODEL`              | `anthropic/claude-opus-5.5` | The model the citizens run on                                                                               |
-| `NEXT_PUBLIC_DONATE_URL`      | none                          | Your donation link. The in-game button is hidden until this is set, and changing it needs a rebuild         |
+| `NEXT_PUBLIC_DONATE_URL`      | `https://buymeacoffee.com/aliciatws` | Overrides the Buy Me a Coffee link in the shared support footer. Changing it needs a rebuild             |
 | `MAX_DAYS_PER_DAY`            | `100`                       | Hard limit on model calls in any 24 hours. New games stop at 80% of it, so running games can finish         |
 | `MAX_DAYS_PER_HOUR`           | `40`                        | New games wait once this many calls ran in the last hour. Running games are not affected                    |
 | `MAX_DAYS_PER_TOWN`           | `30`                        | Model calls one town can use, including rewinds                                                             |
