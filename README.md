@@ -174,6 +174,10 @@ npm run typecheck
 
 With the app running, `node scripts/e2e.mjs http://localhost:3000` checks the full game against your real database. It also makes real model calls, so it uses a small amount of AI credit.
 
+### Design system
+
+The look of the game (newsprint and ink colours, the three typefaces, hard offset shadows, square corners, and the deadpan newspaper voice) is written up in the [Loophole City design system](https://claude.ai/artifact/Hsk3cBCgyKomJZJvf4fTWd#readme). It lists every colour, type and spacing token with a usage note, and previews the main UI patterns (`.btn`, `.panel`, `.paper`, `.stat`, `.bubble`, `.score-card` and the citizen figure). Check it before you add a screen or change a style, so new work matches the rest of the town.
+
 ---
 
 Built for [Claude SG X Supabase: Build with Claude and Supabase](https://luma.com/ClaudesgXsupabase).
